@@ -1,0 +1,64 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath("org.cloudfoundry:cf-gradle-plugin:1.0.5")
+    }
+}
+
+plugins {
+    id 'org.asciidoctor.convert' version '1.5.3'
+    id 'com.github.jruby-gradle.base' version '1.2.0'
+}
+apply plugin: 'cloudfoundry'
+
+repositories {
+    jcenter()
+}
+
+asciidoctor {
+    dependsOn jrubyPrepare
+    gemPath = jrubyPrepare.outputDir
+
+    resources {
+        from(sourceDir) {
+            include 'images/**'
+            include 'stylesheets/**'
+            include 'img/**'
+            include 'js/**'
+        }
+    }
+
+    attributes 'toc2': '',
+            'toclevels': 2,
+            stylesdir: './stylesheets',
+            imagesdir: './images',
+            iconsdir: './icons',
+            scriptsdir: './js',
+            sourcedir: "${rootDir}/labs",
+            stylesheet: 'golo.css',
+            grailsDocDir: 'http://grails.org/doc/latest',
+            'source-highlighter': 'prettify',
+            //    'source-highlighter': 'highlightjs',
+            'highlightjs-theme': 'idea',
+            doctype: 'book',
+            icons: 'font',
+            encoding: 'utf-8',
+            linkcss: true,
+            grailsVersion: '3.0.11',
+            jvmVersion: '1.8.0_66',
+            sectanchors: ''
+}
+
+cloudfoundry {
+    target = 'https://api.run.pivotal.io'
+    space = 'workshop'
+    application = 'jdriven-grails3-workshop'
+    file = file('build/asciidoc/html5')
+    buildpack = 'staticfile_buildpack'
+    memory = 64
+    instances = 1
+}
+
+cfPush.dependsOn asciidoctor
