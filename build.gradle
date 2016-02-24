@@ -24,8 +24,9 @@ ext {
 }
 
 dependencies {
-//    compile group: 'com.typesafe.akka', name: 'akka-actor_2.11', version: akkaV
+    compile group: 'com.typesafe.akka', name: 'akka-actor_2.11', version: akkaV
     compile group: 'com.typesafe.akka', name: 'akka-http-experimental_2.11', version: akkaHttpV
+    compile group: 'com.typesafe.akka', name: 'akka-http-spray-json-experimental_2.11', version: akkaHttpV
 }
 
 asciidoctor {
