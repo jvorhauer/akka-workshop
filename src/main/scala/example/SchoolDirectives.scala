@@ -1,5 +1,6 @@
 package example
 
+import akka.http.scaladsl.server.directives.BasicDirectives
 import akka.http.scaladsl.server.{Directive0, Directives}
 
 import scala.util.Random
@@ -11,5 +12,7 @@ object SchoolDirectives extends Directives {
       case false => ctx.complete(402 -> "helaas")
     }
   }
+
+  def randomFailure2: Directive0 = validate(Random.nextBoolean(), "helaas")
 
 }
