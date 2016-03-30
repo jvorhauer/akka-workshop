@@ -48,7 +48,8 @@ class BartenderActor extends Actor {
 ----
 
 Nu maken we een actorsysteem en een instantie van deze BartenderActor.
-Let op dat we die aanmaken via het actorSysteem, die geeft een ActorRef terug, we werken nooit met rechtstreekse instanties van de Scala klasse.
+Let op dat we die aanmaken via het actorSysteem, die geeft een ActorRef terug. 
+We werken nooit met rechtstreekse instanties van de Scala klasse. De enige communicatie tussen actors is door middel van messages.
 
 Die vragen we vervolgens om een biertje.
 
@@ -59,13 +60,15 @@ import akka.actor.{ActorSystem, Props}
 object BarApp extends App {
   implicit val system = ActorSystem("Bar")
   val bartender: ActorRef = system.actorOf(Props[BartenderActor], "bartender")
+  
   bartender ! "Mag ik een biertje?"
+  
+  Thread.sleep(1000)
+  system.terminate()
 }
 ----
 
 Voer dit uit en zie dat de bartender het biertje tapt.
-
-TODO: netjes einde van het actorSysteem
 
 == Messages
 
