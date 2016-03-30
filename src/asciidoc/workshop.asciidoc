@@ -65,6 +65,8 @@ object BarApp extends App {
 
 Voer dit uit en zie dat de bartender het biertje tapt.
 
+TODO: netjes einde van het actorSysteem
+
 == Messages
 
 Messages kunnen van alles zijn. Strings zijn natuurlijk wat minder handig omdat je je typefouten pas op runtime ontdekt.
