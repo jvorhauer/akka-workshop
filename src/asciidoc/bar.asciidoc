@@ -1,0 +1,115 @@
+== Buildproces
+
+Ook voor Akka gebruiken we natuurlijk ons favoriete buildtool: Gradle.
+
+Maak een build.gradle met deze inhoud:
+
+[source,gradle]
+----
+apply plugin: 'scala'
+
+repositories {
+    jcenter()
+}
+
+ext {
+    akkaV = "2.4.2"
+}
+
+dependencies {
+    compile group: 'com.typesafe.akka', name: 'akka-actor_2.11', version: akkaV
+}
+----
+
+
+== Actors
+
+We beginnen makkelijk met een bekende situatie. Je bestelt een biertje bij de bar.
+Maak de BartenderActor:
+
+[source,scala]
+----
+class BartenderActor extends Actor {
+  def receive = {
+    case "Mag ik een biertje?" => println("Ik tap een biertje")
+    case _ => println("Wablief?")
+  }
+}
+----
+
+Nu maken we een actorsysteem en een instantie van deze BartenderActor.
+Let op dat we die aanmaken via het actorSysteem, die geeft een ActorRef terug.
+We werken nooit met rechtstreekse instanties van de Scala klasse. De enige communicatie tussen actors is door middel van messages.
+
+Die vragen we vervolgens om een biertje.
+
+[source,scala]
+----
+import akka.actor.{ActorSystem, Props}
+
+object BarApp extends App {
+  implicit val system = ActorSystem("Bar")
+  val bartender: ActorRef = system.actorOf(Props[BartenderActor], "bartender")
+
+  bartender ! "Mag ik een biertje?"
+
+  Thread.sleep(1000)
+  system.terminate()
+}
+----
+
+Voer dit uit en zie dat de bartender het biertje tapt.
+
+== Messages
+
+Messages kunnen van alles zijn. Strings zijn natuurlijk wat minder handig omdat je je typefouten pas op runtime ontdekt.
+Beter is het om case classes of objecten te maken.
+Verander de message naar de bartender in een object en kijk na of het biertje nog netjes getapt wordt.
+
+== Logging
+
+Tot nu toe hebben we println gebruikt voor het loggen van de biertjes.
+Akka heeft prima logging functionaliteit.
+Voeg de trait ActorLogging toe op de BartenderActor.
+Dan kunnen we log.info("Ik log een biertje") gebruiken.
+
+We kunnen ook de binnenkomende messages loggen. Hiervoor moeten we de receive functie wrappen met LoggingReceive:
+[source,scala]
+----
+def receive = LoggingReceive {
+  case "message" => doeIets
+}
+
+Om deze logging ook daadwerkelijk te zien, moeten we de logging configuratie aanpassen.
+Maak application.conf:
+[source]
+----
+akka {
+  loglevel = "DEBUG"
+  actor {
+    debug {
+      # enable function of LoggingReceive, which is to log any received message at
+      # DEBUG level
+      receive = on
+    }
+  }
+}
+----
+
+
+== Tell en Ask
+
+de ! spreken we uit als tell.
+
+
+
+
+
+We kunnen ook ask (?) gebruiken.
+import akka.pattern.ask
+
+
+
+
+
+

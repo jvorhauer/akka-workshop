@@ -9,5 +9,7 @@ object SchoolApplication extends App {
   val student = system.actorOf(Props(new StudentActor2(teacher)), "student")
 
   student ! Study
+
   Thread.sleep(1000)
+  system.terminate()
 }

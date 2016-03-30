@@ -1,0 +1,8 @@
+== Benodigdheden
+
+Voor deze workshop heb je nodig:
+
+- Een java 8 jdk
+- Intellij
+- Gradle
+
