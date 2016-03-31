@@ -3,6 +3,7 @@
 /.idea
 /gradlew.bat
 /gradlew
-build
+build/
 .gradle
 
+target/
