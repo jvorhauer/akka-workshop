@@ -1,8 +1,15 @@
-plugins {
-    id 'org.asciidoctor.convert' version '1.5.3'
-    id 'com.github.jruby-gradle.base' version '1.2.0'
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'org.asciidoctor:asciidoctor-gradle-plugin:1.5.3'
+    }
 }
+
 apply plugin: 'scala'
+apply plugin: 'org.asciidoctor.convert'
 
 repositories {
     jcenter()
@@ -20,28 +27,6 @@ dependencies {
 }
 
 asciidoctor {
-    dependsOn jrubyPrepare
-    gemPath = jrubyPrepare.outputDir
-
-//    attributes 'toc2': '',
-//            'toclevels': 2,
-//            stylesdir: './stylesheets',
-//            imagesdir: './images',
-//            iconsdir: './icons',
-//            scriptsdir: './js',
-//            stylesheet: 'golo.css',
-//            grailsDocDir: 'http://grails.org/doc/latest',
-//            'source-highlighter': 'prettify',
-//            //    'source-highlighter': 'highlightjs',
-//            'highlightjs-theme': 'idea',
-//            doctype: 'book',
-//            icons: 'font',
-//            encoding: 'utf-8',
-//            linkcss: true,
-//            grailsVersion: '3.0.11',
-//            jvmVersion: '1.8.0_66',
-//            sectanchors: ''
+    sourceDir "src/asciidoc"
 }
 
-
-apply plugin: 'org.asciidoctor.gradle.asciidoctor'
