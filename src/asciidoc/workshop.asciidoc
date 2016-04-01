@@ -1,4 +1,4 @@
-= Akka
+= Akka workshop
 
 include::intro.asciidoc[]
 include::bar.asciidoc[]

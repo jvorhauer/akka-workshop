@@ -6,3 +6,8 @@ Voor deze workshop heb je nodig:
 - Intellij
 - Gradle
 
+== Akka documentatie
+
+De link:http://doc.akka.io/docs/akka/current/scala.html[Akka documentatie] is duidelijk en informatief.
+Als je ergens meer over wilt weten is dat altijd een goede plaats om te beginnen met zoeken.
+

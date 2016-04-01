@@ -1,5 +1,4 @@
 == Buildproces
-
 Ook voor Akka gebruiken we natuurlijk ons favoriete buildtool: Gradle.
 
 Maak een build.gradle met deze inhoud:
@@ -23,13 +22,13 @@ dependencies {
 
 
 == Actors
-
 We beginnen makkelijk met een bekende situatie. Je bestelt een biertje bij de bar.
-Maak de BartenderActor:
+
+Maak de Bartender:
 
 [source,scala]
 ----
-class BartenderActor extends Actor {
+class Bartender extends Actor {
   def receive = {
     case "Mag ik een biertje?" => println("Ik tap een biertje")
     case _ => println("Wablief?")
@@ -37,11 +36,11 @@ class BartenderActor extends Actor {
 }
 ----
 
-Nu maken we een actorsysteem en een instantie van deze BartenderActor.
-Let op dat we die aanmaken via het actorSysteem, die geeft een ActorRef terug.
+Nu maken we een actorsysteem en een instantie van deze Bartender. +
+Let op dat we die aanmaken via het actorSysteem, die geeft een ActorRef terug. +
 We werken nooit met rechtstreekse instanties van de Scala klasse. De enige communicatie tussen actors is door middel van messages.
 
-Die vragen we vervolgens om een biertje.
+Vervolgens vragen we de bartender om een biertje:
 
 [source,scala]
 ----
@@ -49,7 +48,7 @@ import akka.actor.{ActorSystem, Props}
 
 object BarApp extends App {
   implicit val system = ActorSystem("Bar")
-  val bartender: ActorRef = system.actorOf(Props[BartenderActor], "bartender")
+  val bartender: ActorRef = system.actorOf(Props[Bartender], "bartender")
 
   bartender ! "Mag ik een biertje?"
 
@@ -61,16 +60,16 @@ object BarApp extends App {
 Voer dit uit en zie dat de bartender het biertje tapt.
 
 == Messages
-
-Messages kunnen van alles zijn. Strings zijn natuurlijk wat minder handig omdat je je typefouten pas op runtime ontdekt.
+Messages kunnen van alles zijn. Strings zijn natuurlijk wat minder handig omdat je je typefouten pas op runtime ontdekt. +
 Beter is het om case classes of objecten te maken.
+
 Verander de message naar de bartender in een object en kijk na of het biertje nog netjes getapt wordt.
 
 == Logging
+Tot nu toe hebben we println gebruikt voor het loggen van de biertjes. +
+Akka heeft prima logging functionaliteit. +
 
-Tot nu toe hebben we println gebruikt voor het loggen van de biertjes.
-Akka heeft prima logging functionaliteit.
-Voeg de trait ActorLogging toe op de BartenderActor.
+Voeg de trait ActorLogging toe op de Bartender. +
 Dan kunnen we log.info("Ik log een biertje") gebruiken.
 
 We kunnen ook de binnenkomende messages loggen. Hiervoor moeten we de receive functie wrappen met LoggingReceive:
@@ -79,8 +78,10 @@ We kunnen ook de binnenkomende messages loggen. Hiervoor moeten we de receive fu
 def receive = LoggingReceive {
   case "message" => doeIets
 }
+----
 
-Om deze logging ook daadwerkelijk te zien, moeten we de logging configuratie aanpassen.
+Om deze logging ook daadwerkelijk te zien, moeten we de logging configuratie aanpassen. +
+
 Maak application.conf:
 [source]
 ----
@@ -96,17 +97,44 @@ akka {
 }
 ----
 
+== Configuratie
+Akka leest zijn configuratie standaard uit application.conf.
+Dit is in link:https://github.com/typesafehub/config#using-hocon-the-json-superset[HOCON] formaat.
+Zie de link:http://doc.akka.io/docs/akka/current/general/configuration.html#Listing_of_the_Reference_Configuration[documentatie] voor meer configuratie opties.
 
-== Tell en Ask
+Je kan ook prima eigen configuratie instellingen hier in zetten. Die lees je dan vervolgens in je actor uit met:
+[source,scala]
+----
+context.system.settings.config.getString("instelling")
+----
 
-de ! spreken we uit als tell.
+Zet een configuratie instelling "bierVanDeDag" in application.conf. +
+Maak een nieuwe message: BestelBierVanDeDag. +
+Laat de Bartender hier op reageren door iets toepasselijks te loggen aan de hand van deze instelling.
 
 
+== Tell
+Vooralsnog is de communicatie eenrichtingsverkeer. We sturen een message naar de bartender die het alleen maar logt. +
+Het is leuker als we ook daadwerkelijk een biertje terug krijgen. (In de vorm van een message) +
+In de "receive" functie kunnen we de verzender van de message achterhalen met de functie "sender".
+
+Als je dit nu uitvoert, zal je logging voorbij zien komen over dead letters. Dat betekent dat messages niet aankomen.
+Dit komt omdat we onze eerste message niet vanuit een actor verstuurden. Er is dus geen actor om het biertje te ontvangen.
+
+Maak een nieuwe actor "Programmeur". Geef die de bestaande Bartender mee in de constructie. +
+Laat deze actor reageren op de message "Programmeer". Van programmeren wordt de programmeur dorstig, dus die bestelt een biertje bij de bartender. +
+Zorg dat de programmeur nu ook met de bier message om kan gaan door iets te loggen.
 
 
+== Ask
+We kunnen ook ask (?) gebruiken. +
+Ask maakt achter de schermen een actor aan en geeft een antwoord terug in een Future. +
+Zie de link:http://doc.akka.io/docs/akka/current/scala/actors.html#Send_messages[documentatie]. Of de presentatie voor een voorbeeld.
 
-We kunnen ook ask (?) gebruiken.
-import akka.pattern.ask
+Zo kunnen we wel vanuit de BarApp iets doen met het biertje. +
+Gebruik het ask pattern om vanuit BarApp een biertje te bestellen en log het biertje wat je krijgt.
+
+
 
 
 
