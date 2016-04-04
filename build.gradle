@@ -17,8 +17,8 @@ repositories {
 }
 
 ext {
-    akkaV = "2.4.2"
-    akkaHttpV = "2.4.2"
+    akkaV = "2.4.3"
+    akkaHttpV = "2.4.3"
 }
 
 dependencies {
