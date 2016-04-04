@@ -3,7 +3,7 @@ import sbt.Keys._
 val akkaVersion = "2.4.2"
 
 lazy val `akkaws` = (project in file(".")).settings(
-  name := "akkaws",
+  name := "akkaws-csv",
   organization := "com.jdriven",
   version := "1.0.0-SNAPSHOT",
   scalaVersion := "2.11.8",
@@ -29,7 +29,7 @@ lazy val `akkaws` = (project in file(".")).settings(
   ),
 
   fork in run := true,
-//  cancelable in Global := true,
+  cancelable in Global := true,
 
   sources in (Compile, doc) := Seq.empty,
   publishArtifact in (Compile, packageDoc) := false
