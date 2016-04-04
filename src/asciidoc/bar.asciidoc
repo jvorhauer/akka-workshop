@@ -135,6 +135,10 @@ Zo kunnen we wel vanuit de BarApp iets doen met het biertje. +
 Gebruik het ask pattern om vanuit BarApp een biertje te bestellen en log het biertje wat je krijgt.
 
 
+== Schedule
+Programmeurs hebben aan één biertje zelden genoeg. Maak het zo dat programmeurs om de 10 seconden zin hebben in een nieuw biertje.
+
+link:http://doc.akka.io/docs/akka/2.4.3/java/scheduler.html[Scheduler documentatie]
 
 
 
