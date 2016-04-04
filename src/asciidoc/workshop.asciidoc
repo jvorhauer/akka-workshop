@@ -2,4 +2,5 @@
 
 include::intro.asciidoc[]
 include::bar.asciidoc[]
+include::akkaHttp.asciidoc[]
 

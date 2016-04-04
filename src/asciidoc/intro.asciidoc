@@ -3,7 +3,7 @@
 Voor deze workshop heb je nodig:
 
 - Een java 8 jdk
-- Intellij
+- Intellij, met Gradle en Scala plugins
 - Gradle
 
 == Akka documentatie

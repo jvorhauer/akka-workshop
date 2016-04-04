@@ -10,6 +10,7 @@ buildscript {
 
 apply plugin: 'scala'
 apply plugin: 'org.asciidoctor.convert'
+apply plugin: 'application'
 
 repositories {
     jcenter()
@@ -29,4 +30,6 @@ dependencies {
 asciidoctor {
     sourceDir "src/asciidoc"
 }
+
+mainClassName = "example.SchoolCan"
 

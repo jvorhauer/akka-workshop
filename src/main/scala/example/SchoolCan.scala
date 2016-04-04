@@ -2,39 +2,47 @@ package example
 
 import akka.actor.{ActorSystem, Props}
 import akka.http.scaladsl.Http
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.{RouteResult, Route}
-import akka.http.scaladsl.server.RouteResult._
-import akka.io.IO
+import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
 import akka.util.Timeout
 import akka.pattern.ask
+import spray.json.DefaultJsonProtocol
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
+import scala.util.Success
 
-object SchoolCan extends App {
+case class QuestionInput(question: String) {
+  require(question.endsWith("?"), "Questions should end in a question mark!")
+}
+
+object SchoolCan extends App with SprayJsonSupport with DefaultJsonProtocol {
   implicit val system = ActorSystem("SchoolSystem")
   val teacher = system.actorOf(Props[TeacherActor], "teacher")
-  
-  
+
   implicit val materializer = ActorMaterializer()
   implicit val executionContext: ExecutionContext = system.dispatcher
   implicit val timeout = Timeout(5.seconds)
   val port = 8081
+
+  implicit val questionInputFormat = jsonFormat1(QuestionInput)
+
   val route: Route = path("hello") {
     complete("Hello!")
   } ~ path("question") {
-    complete("?")
+    post {
+      entity(as[QuestionInput]) { input =>
+        onComplete(teacher ? TeacherMessages.Question(input.question)) {
+          case Success(TeacherMessages.Answer(answer)) => complete(200 -> answer)
+          case _ => complete(500 -> "Something went horribly wrong!")
+        }
+      }
+    }
   }
 
-  // `route` will be implicitly converted to `Flow` using `RouteResult.route2HandlerFlow`
-  val bindingFuture = Http().bindAndHandle(RouteResult.route2HandlerFlow(route), "localhost", port)
+  val bindingFuture = Http().bindAndHandle(route, "localhost", port)
 
-  println(s"Server online at http://localhost:$port/\nPress RETURN to stop...")
-  Console.readLine()
-  
-  bindingFuture
-    .flatMap(_.unbind()) // trigger unbinding from the port
-    .onComplete(_ ⇒ system.terminate()) // and shutdown when done
+  println(s"Server online at http://localhost:$port/")
 }
