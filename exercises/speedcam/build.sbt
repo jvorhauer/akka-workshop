@@ -1,6 +1,6 @@
 import sbt.Keys._
 
-val akkaVersion = "2.4.2"
+val akkaVersion = "2.4.3"
 
 lazy val `speedcam` = (project in file(".")).settings(
   name := "akkaws-speedcam",

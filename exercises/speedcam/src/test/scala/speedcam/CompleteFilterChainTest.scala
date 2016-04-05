@@ -8,9 +8,15 @@ import support.TerminateAfterAll
 class CompleteFilterChainTest extends TestKit(ActorSystem("testsys")) with WordSpecLike with Matchers with TerminateAfterAll {
 
   val endProbe = TestProbe()
+
   val speedFilter = system.actorOf(SpeedFilter.props(50, endProbe.ref), "speedFilter")
   val licenseFilter = system.actorOf(LicenseFilter.props(speedFilter), "licenseFilter")
   val checkLicense = system.actorOf(CheckLicense.props(licenseFilter), "checkLicense")
+
+  // optimized route:
+  // val licenseFilter = system.actorOf(LicenseFilter.props(endProbe.ref), "licenseFilter")
+  // val checkLicense = system.actorOf(CheckLicense.props(licenseFilter), "checkLicense")
+  // val speedFilter = system.actorOf(SpeedFilter.props(50, checkLicense), "speedFilter")
 
   "The complete filter chain" must {
     "pass on a speeding vehicle with readable license" in {
