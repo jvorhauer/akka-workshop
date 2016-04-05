@@ -12,7 +12,7 @@ class SpeedFilterTest extends TestKit(ActorSystem("testsys")) with WordSpecLike 
       val endProbe = TestProbe()
       val props = SpeedFilter.props(50, endProbe.ref)
       val actor = system.actorOf(props)
-      val msg = PhotoMessage("1", "Test", None, 51)
+      val msg = PhotoMessage(1, "Test", None, 51)
       actor ! msg
       endProbe.expectMsg(msg)
     }
@@ -21,7 +21,7 @@ class SpeedFilterTest extends TestKit(ActorSystem("testsys")) with WordSpecLike 
       val endProbe = TestProbe()
       val props = SpeedFilter.props(50, endProbe.ref)
       val actor = system.actorOf(props)
-      val msg = PhotoMessage("1", "Test", None, 50)
+      val msg = PhotoMessage(1, "Test", None, 50)
       actor ! msg
       endProbe.expectNoMsg()
     }

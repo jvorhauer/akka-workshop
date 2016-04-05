@@ -1,6 +1,6 @@
 package speedcam
 
-import akka.actor.{Actor, ActorLogging, ActorRef}
+import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 
 class LicenseFilter(next : ActorRef) extends Actor with ActorLogging {
   override def receive : Receive = {
@@ -9,4 +9,8 @@ class LicenseFilter(next : ActorRef) extends Actor with ActorLogging {
         next ! msg
       }
   }
+}
+
+object LicenseFilter {
+  def props(next : ActorRef) = Props(new LicenseFilter(next))
 }

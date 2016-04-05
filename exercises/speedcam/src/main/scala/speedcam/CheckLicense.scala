@@ -1,17 +1,18 @@
 package speedcam
 
-import akka.actor.{Actor, ActorLogging, ActorRef}
+import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import process.OpticalCharRecognizer
 
 class CheckLicense(next : ActorRef) extends Actor with ActorLogging {
 
-  var count = 0
-
   override def receive : Receive = {
     case msg : PhotoMessage =>
-      count += 1
-      val license : Option[String] = OpticalCharRecognizer.parse(count, msg.photo)
-      val processed : PhotoMessage = msg.copy(id = count.toString, license = license)
+      val license : Option[String] = OpticalCharRecognizer.parse(msg.id, msg.photo)
+      val processed : PhotoMessage = msg.copy(license = license)
       next ! processed
   }
+}
+
+object CheckLicense {
+  def props(next : ActorRef) = Props(new CheckLicense(next))
 }
