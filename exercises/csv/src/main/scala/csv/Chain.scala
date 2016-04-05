@@ -1,7 +1,7 @@
 package csv
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, PoisonPill, Props}
-import akka.routing.RoundRobinPool
+import akka.routing.{RoundRobinPool, SmallestMailboxPool}
 import util.Database
 
 import scala.collection.mutable
@@ -16,10 +16,10 @@ case class Finished(filename : String)
 
 object FileReader extends App {
   val system = ActorSystem.create("csv")
-  val reader = system.actorOf(Props[FileReader])
+  val reader = system.actorOf(Props[FileReader], "reader")
 
-  reader ! "AD.csv"
   reader ! "NL.csv"
+  reader ! "AD.csv"
 }
 
 
@@ -29,7 +29,7 @@ object FileReader extends App {
   */
 class FileReader extends Actor with ActorLogging {
 
-  private val validator = context.actorOf(Props[LineValidator])
+  private val validator = context.actorOf(Props[LineValidator], "validator")
   private var active : Int = 0
 
   override def receive : Receive = {
@@ -65,21 +65,21 @@ class FileReader extends Actor with ActorLogging {
 class LineValidator extends Actor with ActorLogging {
 
   private val persistor = context.actorOf(Props[Persistor])
-  private val router = context.actorOf(RoundRobinPool(3).props(Props[Persistor]), "router")
+  private val router = context.actorOf(SmallestMailboxPool(5).props(Props[Persistor]), "router")
   private val counters = mutable.Map[String, Int]()     // state is no problem within Actors
 
   override def receive : Receive = {
     case Line(filename, line) =>
       val fields = line.split("\\t").toList
       if (valid(fields)) {
-        count(filename)
         router ! Fields(filename, fields)
+//        persistor ! Fields(filename, fields)
+        count(filename)
       }
     case Done(filename) =>
       router ! Done(filename)
+//      persistor ! Done(filename)
       sender ! Counted(filename, counters.getOrElse(filename, -1))
-
-    case Finished(filename) => sender ! Finished(filename)
   }
 
   def valid(xs : List[String]) : Boolean = {
@@ -104,8 +104,8 @@ class Persistor extends Actor with ActorLogging {
   override def receive : Receive = {
     case Fields(filename, xs) => Database.save(xs)
     case Done(filename) =>
-      log.info(s"wrote last record of $filename")
-      sender ! Finished(filename)
+      val reader = context.actorSelection("/user/reader")
+      reader ! Finished(filename)
   }
 
 }
