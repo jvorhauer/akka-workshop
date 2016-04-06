@@ -14,6 +14,7 @@ case class Line(filename : String, content : String)
 case class Fields(filename : String, content : List[String])
 case class Finished(filename : String)
 
+
 object FileReader extends App {
   val system = ActorSystem.create("csv")
   val reader = system.actorOf(Props[FileReader], "reader")
@@ -25,7 +26,7 @@ object FileReader extends App {
 
 /**
   * Read file as specified by a String message which is supposed to be a filename.
-  * When finished reading a file with filename, the chain of Actors sends a total Counted message
+  * When finished reading a file with filename, lines read count is send here.
   */
 class FileReader extends Actor with ActorLogging {
 
@@ -62,6 +63,8 @@ class FileReader extends Actor with ActorLogging {
   * Validate a line by splitting the contents of the received Line messages
   * in its tab-separated fields and validating all validatable fields.
   * Each valid line is passed to a persistenca Actor and counted.
+  *
+  * NB: switch between implementations to see the difference.
   */
 class LineValidator extends Actor with ActorLogging {
 
