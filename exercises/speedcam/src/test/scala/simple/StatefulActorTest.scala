@@ -15,7 +15,7 @@ class StatefulActorTest extends TestKit(ActorSystem("testsys")) with WordSpecLik
 
       actor.count should be (0)
 
-      actorRef ! "Hallo"
+      actorRef ! "Hello"
       actor.count should be (1)
 
       actorRef ! "Is it me you are looking for?"
