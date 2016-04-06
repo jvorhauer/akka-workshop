@@ -1,0 +1,84 @@
+== Routers
+
+Load Balancing / Performance: parallel en concurrent
+
+=== Handmatig
+
+[source,scala]
+----
+class PersistorManager extends Actor with ActorLogging {
+  var router = {
+    val routees = Vector.fill(5) {
+      val r = context.actorOf(Props[Persistor])
+      context watch r
+      ActorRefRoutee(r)
+    }
+    Router(RoundRobinRoutingLogic(), routees)
+  }
+
+  override def receive : Receive = {
+    case f: Fields => router.route(f, sender())
+    case d: Done => router.route(d, sender())
+
+    case Terminated(a) =>                           // must handle supervision...
+      router = router.removeRoutee(a)
+      val r = context.actorOf(Props[Persistor])
+      context watch r
+      router = router.addRoutee(r)
+  }
+}
+----
+
+
+=== Pool
+
+Geconfigureerd in 'application.conf':
+
+[source,json]
+----
+akka {
+  actor.deployment {
+    /reader/validator/confrouter {
+      router = round-robin-pool
+      nr-of-instances = 5
+    }
+  }
+}
+----
+
+[source,scala]
+----
+val worker = context.actorOf(FromConfig.props(Props[Persistor]), "confrouter")
+----
+
+Of gecodeerd:
+
+[source,scala]
+----
+
+----
+
+
+=== Group
+
+[source,scala]
+----
+
+----
+
+=== Aanroep
+
+De aanroep van een router is exact hetzlefde als de aanroep van de actor (ref) zelf!
+
+[source,scala]
+----
+val worker = context.actorOf(Props[Persistor])
+
+val router = context.actorOf(SmallestMailboxPool(5).props(Props[Persistor]), "router")
+
+worker ! work
+router ! work
+----
+
+De tweede aanroep heeft tot gevolg dat het werk aan de routee gestuurd wordt die het minste werk
+berichten in zijn/haar Mailbox heeft.

@@ -1,0 +1,7 @@
+== Test
+
+Enige uitleg over het gebruik van Akka's TestKit
+
+=== Unit tests
+
+=== Integration tests
