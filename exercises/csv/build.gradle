@@ -1,0 +1,34 @@
+buildscript {
+  repositories {
+    jcenter()
+    mavenCentral()
+  }
+}
+
+apply plugin: 'scala'
+apply plugin: 'application'
+
+repositories {
+  jcenter()
+}
+
+ext {
+  akkaV = "2.4.3"
+  scalaTestV = "2.2.6"
+}
+
+dependencies {
+  compile group: 'com.typesafe.akka', name: 'akka-actor_2.11', version: akkaV
+  compile group: 'com.typesafe.akka', name: 'akka-slf4j_2.11', version: akkaV
+
+  testCompile group: 'com.typesafe.akka', name: 'akka-testkit_2.11', version: akkaV
+  testCompile group: 'org.scalatest', name: 'scalatest_2.11', version: scalaTestV
+}
+
+tasks.withType(ScalaCompile) {
+  scalaCompileOptions.with {
+    force = true
+  }
+}
+
+mainClassName = "csv.FileReader"
