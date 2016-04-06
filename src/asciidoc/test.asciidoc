@@ -1,10 +1,35 @@
 == Test
 
-Enige uitleg over het gebruik van Akka's TestKit
+Enige uitleg over het gebruik van Akka's TestKit.
 
 Project met volledige(r) source van de voorbeelden in de subdirectory *exercises/speedcam* van dit project.
+Dit project omvat een keten van filter actors die uiteindelijk een stroom van snelheidsovertredingen oplevert.
+Een snelheidsovertreding is een nummerbord met een snelheid. De filters halen die informatie uit een
+aangeleverde foto + de snelheid ten tijde van het maken van die foto.
+
+Met 'gradle -i spec' kunnen alle tests uitgevoerd worden.
 
 === Unit tests
+
+Indien een Actor state heeft, dan kunnen we normaliter niet bij die state.
+_Dit is overigens één van de uitgangspunten van Akka!_
+Voor dit geval beschikken we over een zeer eenvoudige StatefulActor:
+
+[source,scala]
+----
+class StatefulActor extends Actor {
+
+  var state = "Nog Niks"
+  var count = 0
+
+  override def receive : Receive = {
+    case "Quit" => state = "Done"
+    case s : String =>
+      count += 1
+      state = s
+  }
+}
+----
 
 Voor Unit tests is de TestActorRef gemaakt. Hiermee kunnen we bij de onderliggende Actor:
 
@@ -64,4 +89,65 @@ actor.state should be ("Done")
 Let op: deze tests moeten dus synchroon uitgevoerd kunnen worden
 
 === Integration tests
+
+Enkele test case:
+
+[source,scala]
+----
+class SpeedFilterTest extends TestKit(ActorSystem("testsys")) with WordSpecLike with Matchers with TerminateAfterAll {
+  "A SpeedFilter" must {
+    "return the msg if going too fast" in {
+      val endProbe = TestProbe()
+      val props = SpeedFilter.props(50, endProbe.ref)
+      val actor = system.actorOf(props)
+      val msg = PhotoMessage(1, "Test", None, 51)
+      actor ! msg
+      endProbe.expectMsg(msg)
+    }
+
+    "return no msg if not speeding" in {
+      val endProbe = TestProbe()
+      val props = SpeedFilter.props(50, endProbe.ref)
+      val actor = system.actorOf(props)
+      val msg = PhotoMessage(1, "Test", None, 50)
+      actor ! msg
+      endProbe.expectNoMsg()
+    }
+  }
+}
+----
+
+Volledige keten-test van actors:
+
+[source,scala]
+----
+class CompleteFilterChainTest extends TestKit(ActorSystem("testsys")) with WordSpecLike with Matchers with TerminateAfterAll {
+
+  val endProbe = TestProbe()
+
+  val speedFilter = system.actorOf(SpeedFilter.props(50, endProbe.ref), "speedFilter")
+  val licenseFilter = system.actorOf(LicenseFilter.props(speedFilter), "licenseFilter")
+  val checkLicense = system.actorOf(CheckLicense.props(licenseFilter), "checkLicense")
+
+  "The complete filter chain" must {
+    "pass on a speeding vehicle with readable license" in {
+      val msg = PhotoMessage(1, "Test", None, 51)
+      checkLicense ! msg
+      endProbe.expectMsg(msg.copy(license = Some("Test")))
+    }
+
+    "not pass a msg without readable license" in {
+      val msg = PhotoMessage(7, "Test", None, 51)
+      checkLicense ! msg
+      endProbe.expectNoMsg()
+    }
+
+    "not pass a msg with speed too low" in {
+      val msg = PhotoMessage(1, "Test", None, 50)
+      checkLicense ! msg
+      endProbe.expectNoMsg()
+    }
+  }
+}
+----
 

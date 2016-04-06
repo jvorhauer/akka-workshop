@@ -2,6 +2,10 @@
 
 Load Balancing / Performance: parallel en concurrent
 
+De volledige(r) sources van dit onderwerp kun je vinden in de subdirectory *exercises/csv* van dit project.
+
+Met 'gradle run' wordt de applicatie uitgevoerd.
+
 === Handmatig
 
 [source,scala]
@@ -34,7 +38,7 @@ class PersistorManager extends Actor with ActorLogging {
 
 Geconfigureerd in 'application.conf':
 
-[source,json]
+[source]
 ----
 akka {
   actor.deployment {
@@ -46,24 +50,52 @@ akka {
 }
 ----
 
+*NB*: let op het path /reader/validator/confrouter! Hierin is *reader* de naam van de eerste Actor, die een
+child-actor *validator* maakt. Binnen die actor(ref) *validator* maken we de pool met de naam *confrouter*.
+
 [source,scala]
 ----
-val worker = context.actorOf(FromConfig.props(Props[Persistor]), "confrouter")
+val router = context.actorOf(FromConfig.props(Props[Persistor]), "confrouter")
 ----
+
+*NB*: confrouter is de naam die we in de 'application.conf' aan het laatste deel van het path van deze pool hebben
+gegeven!
 
 Of gecodeerd:
 
 [source,scala]
 ----
-
+val router = context.actorOf(SmallestMailboxPool(5).props(Props[Persistor]), "router")
 ----
 
 
 === Group
 
-[source,scala]
+Geconfigureerd in 'application.conf':
+
+[source]
+----
+/reader/validator/grouprouter {
+  router = random-group
+  routees.paths = [
+    "/user/reader/validator/persistor-1",
+    "/user/reader/validator/persistor-2",
+    "/user/reader/validator/persistor-3",
+    "/user/reader/validator/persistor-4",
+    "/user/reader/validator/persistor-5"
+  ]
+}
 ----
 
+[source,scala]
+----
+val router = context.actorOf(FromConfig.props(), "grouprouter")
+----
+
+[source,scala]
+----
+val paths = List("/user/workers/w1", "/user/workers/w2", "/user/workers/w3")
+val router = context.actorOf(RandomGroup(paths).props(), "router")
 ----
 
 === Aanroep
@@ -81,4 +113,4 @@ router ! work
 ----
 
 De tweede aanroep heeft tot gevolg dat het werk aan de routee gestuurd wordt die het minste werk
-berichten in zijn/haar Mailbox heeft.
+berichten in zijn Mailbox heeft.
