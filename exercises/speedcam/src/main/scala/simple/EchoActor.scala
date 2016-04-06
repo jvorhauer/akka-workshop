@@ -1,10 +1,12 @@
 package simple
 
-import akka.actor.{Actor, Props}
+import akka.actor.{Actor, ActorLogging, Props}
 
-class EchoActor extends Actor {
+class EchoActor extends Actor with ActorLogging {
   override def receive : Receive = {
-    case msg => sender() ! msg        // echo received message
+    case msg =>
+      log.info(s"receive: msg: $msg")
+      sender() ! msg        // echo received message
   }
 }
 
