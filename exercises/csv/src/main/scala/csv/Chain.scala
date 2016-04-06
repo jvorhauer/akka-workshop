@@ -1,7 +1,7 @@
 package csv
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, PoisonPill, Props}
-import akka.routing.{RoundRobinPool, SmallestMailboxPool}
+import akka.routing.{FromConfig, RoundRobinPool, SmallestMailboxPool}
 import util.Database
 
 import scala.collection.mutable
@@ -66,18 +66,21 @@ class LineValidator extends Actor with ActorLogging {
 
   private val persistor = context.actorOf(Props[Persistor])
   private val router = context.actorOf(SmallestMailboxPool(5).props(Props[Persistor]), "router")
+  private val confrouter = context.actorOf(FromConfig.props(Props[Persistor]), "confrouter")
   private val counters = mutable.Map[String, Int]()     // state is no problem within Actors
 
   override def receive : Receive = {
     case Line(filename, line) =>
       val fields = line.split("\\t").toList
       if (valid(fields)) {
-        router ! Fields(filename, fields)
+//        router ! Fields(filename, fields)
+        confrouter ! Fields(filename, fields)
 //        persistor ! Fields(filename, fields)
         count(filename)
       }
     case Done(filename) =>
-      router ! Done(filename)
+//      router ! Done(filename)
+      confrouter ! Done(filename)
 //      persistor ! Done(filename)
       sender ! Counted(filename, counters.getOrElse(filename, -1))
   }
