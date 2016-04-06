@@ -1,7 +1,7 @@
 package csv
 
-import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, PoisonPill, Props}
-import akka.routing.{FromConfig, RoundRobinPool, SmallestMailboxPool}
+import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, PoisonPill, Props, Terminated}
+import akka.routing.{ActorRefRoutee, FromConfig, RoundRobinPool, RoundRobinRoutingLogic, Router, SmallestMailboxPool}
 import util.Database
 
 import scala.collection.mutable
@@ -51,6 +51,7 @@ class FileReader extends Actor with ActorLogging {
       log.info(s"finished writing results of $filename")
       active -= 1
       if (active == 0) {
+        Thread.sleep(500)           // a bit of extra time to finish
         context.system.terminate()
       }
   }
@@ -60,28 +61,26 @@ class FileReader extends Actor with ActorLogging {
 /**
   * Validate a line by splitting the contents of the received Line messages
   * in its tab-separated fields and validating all validatable fields.
-  * Each valid line is passed to a persistenca Actor for future use.
+  * Each valid line is passed to a persistenca Actor and counted.
   */
 class LineValidator extends Actor with ActorLogging {
 
-  private val persistor = context.actorOf(Props[Persistor])
-  private val router = context.actorOf(SmallestMailboxPool(5).props(Props[Persistor]), "router")
-  private val confrouter = context.actorOf(FromConfig.props(Props[Persistor]), "confrouter")
+//  private val worker = context.actorOf(Props[Persistor])
+//  private val worker = context.actorOf(SmallestMailboxPool(5).props(Props[Persistor]), "router")
+  private val worker = context.actorOf(FromConfig.props(Props[Persistor]), "confrouter")
+//  private val worker = context.actorOf(Props[PersistorManager], "manager")
+
   private val counters = mutable.Map[String, Int]()     // state is no problem within Actors
 
   override def receive : Receive = {
     case Line(filename, line) =>
       val fields = line.split("\\t").toList
       if (valid(fields)) {
-//        router ! Fields(filename, fields)
-        confrouter ! Fields(filename, fields)
-//        persistor ! Fields(filename, fields)
+        worker ! Fields(filename, fields)
         count(filename)
       }
     case Done(filename) =>
-//      router ! Done(filename)
-      confrouter ! Done(filename)
-//      persistor ! Done(filename)
+      worker ! Done(filename)
       sender ! Counted(filename, counters.getOrElse(filename, -1))
   }
 
@@ -99,8 +98,8 @@ class LineValidator extends Actor with ActorLogging {
 
 
 /**
-  * Store the contents of the Fields message soemwhere save.
-  * Count each received Fields message.
+  * Store the contents of the Fields message somewhere save.
+  * NB: might take some time for each 'save' action...
   */
 class Persistor extends Actor with ActorLogging {
 
@@ -111,4 +110,31 @@ class Persistor extends Actor with ActorLogging {
       reader ! Finished(filename)
   }
 
+}
+
+
+/**
+  * Handle the routing 'manually'
+  * TODO: fix the dead letters at the end...
+  */
+class PersistorManager extends Actor with ActorLogging {
+  var router = {
+    val routees = Vector.fill(5) {
+      val r = context.actorOf(Props[Persistor])
+      context watch r
+      ActorRefRoutee(r)
+    }
+    Router(RoundRobinRoutingLogic(), routees)
+  }
+
+  override def receive : Receive = {
+    case f: Fields => router.route(f, sender())
+    case d: Done => router.route(d, sender())
+
+    case Terminated(a) =>                           // must handle supervision...
+      router = router.removeRoutee(a)
+      val r = context.actorOf(Props[Persistor])
+      context watch r
+      router = router.addRoutee(r)
+  }
 }
