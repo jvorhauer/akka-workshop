@@ -15,7 +15,7 @@ Indien een Actor state heeft, dan kunnen we normaliter niet bij die state.
 _Dit is overigens één van de uitgangspunten van Akka!_
 Voor dit geval beschikken we over een zeer eenvoudige StatefulActor:
 
-[source,scala]
+[source]
 ----
 class StatefulActor extends Actor {
 
@@ -33,7 +33,7 @@ class StatefulActor extends Actor {
 
 Voor Unit tests is de TestActorRef gemaakt. Hiermee kunnen we bij de onderliggende Actor:
 
-[source,scala]
+[source]
 ----
 val actorRef = TestActorRef[StatefulActor]
 val actor = actorRef.underlyingActor
@@ -41,7 +41,7 @@ val actor = actorRef.underlyingActor
 
 Waarin de StatefulActor lekker eenvoudig is gehouden:
 
-[source,scala]
+[source]
 ----
 class StatefulActor extends Actor with ActorLogging {
 
@@ -59,7 +59,7 @@ class StatefulActor extends Actor with ActorLogging {
 
 En dan nu enige tests:
 
-[source,scala]
+[source]
 ----
 actor.count should be (0)
 
@@ -72,7 +72,7 @@ actor.count should be (2)
 
 of
 
-[source,scala]
+[source]
 ----
 val actorRef = TestActorRef[StatefulActor]
 val actor = actorRef.underlyingActor
@@ -86,13 +86,14 @@ actorRef ! "Quit"
 actor.state should be ("Done")
 ----
 
-Let op: deze tests moeten dus synchroon uitgevoerd kunnen worden
+Let op: deze tests moeten dus synchroon uitgevoerd kunnen worden. Indien een Actor afhankelijk is van de resultaten uit een 
+andere Actor en/of proces dan kan het zijn dat asynchrone zaken niet op tijd af zijn voor het eindigen 
 
 === Integration tests
 
 Enkele test case:
 
-[source,scala]
+[source]
 ----
 class SpeedFilterTest extends TestKit(ActorSystem("testsys")) with WordSpecLike with Matchers with TerminateAfterAll {
   "A SpeedFilter" must {
@@ -119,7 +120,7 @@ class SpeedFilterTest extends TestKit(ActorSystem("testsys")) with WordSpecLike 
 
 Volledige keten-test van actors:
 
-[source,scala]
+[source]
 ----
 class CompleteFilterChainTest extends TestKit(ActorSystem("testsys")) with WordSpecLike with Matchers with TerminateAfterAll {
 
@@ -150,4 +151,3 @@ class CompleteFilterChainTest extends TestKit(ActorSystem("testsys")) with WordS
   }
 }
 ----
-

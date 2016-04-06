@@ -8,7 +8,7 @@ Met 'gradle run' wordt de applicatie uitgevoerd.
 
 === Handmatig
 
-[source,scala]
+[source]
 ----
 class PersistorManager extends Actor with ActorLogging {
   var router = {
@@ -53,7 +53,7 @@ akka {
 *NB*: let op het path /reader/validator/confrouter! Hierin is *reader* de naam van de eerste Actor, die een
 child-actor *validator* maakt. Binnen die actor(ref) *validator* maken we de pool met de naam *confrouter*.
 
-[source,scala]
+[source]
 ----
 val router = context.actorOf(FromConfig.props(Props[Persistor]), "confrouter")
 ----
@@ -63,7 +63,7 @@ gegeven!
 
 Of gecodeerd:
 
-[source,scala]
+[source]
 ----
 val router = context.actorOf(SmallestMailboxPool(5).props(Props[Persistor]), "router")
 ----
@@ -87,12 +87,12 @@ Geconfigureerd in 'application.conf':
 }
 ----
 
-[source,scala]
+[source]
 ----
 val router = context.actorOf(FromConfig.props(), "grouprouter")
 ----
 
-[source,scala]
+[source]
 ----
 val paths = List("/user/workers/w1", "/user/workers/w2", "/user/workers/w3")
 val router = context.actorOf(RandomGroup(paths).props(), "router")
@@ -102,7 +102,7 @@ val router = context.actorOf(RandomGroup(paths).props(), "router")
 
 De aanroep van een router is exact hetzlefde als de aanroep van de actor (ref) zelf!
 
-[source,scala]
+[source]
 ----
 val worker = context.actorOf(Props[Persistor])
 
