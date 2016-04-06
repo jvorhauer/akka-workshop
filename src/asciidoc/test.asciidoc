@@ -2,6 +2,66 @@
 
 Enige uitleg over het gebruik van Akka's TestKit
 
+Project met volledige(r) source van de voorbeelden in de subdirectory *exercises/speedcam* van dit project.
+
 === Unit tests
 
+Voor Unit tests is de TestActorRef gemaakt. Hiermee kunnen we bij de onderliggende Actor:
+
+[source,scala]
+----
+val actorRef = TestActorRef[StatefulActor]
+val actor = actorRef.underlyingActor
+----
+
+Waarin de StatefulActor lekker eenvoudig is gehouden:
+
+[source,scala]
+----
+class StatefulActor extends Actor with ActorLogging {
+
+  var state = "Nog Niks"
+  var count = 0
+
+  override def receive : Receive = {
+    case "Quit" => state = "Done"
+    case s : String =>
+      count += 1
+      state = s
+  }
+}
+----
+
+En dan nu enige tests:
+
+[source,scala]
+----
+actor.count should be (0)
+
+actorRef ! "Hallo"
+actor.count should be (1)
+
+actorRef ! "Is it me you are looking for?"
+actor.count should be (2)
+----
+
+of
+
+[source,scala]
+----
+val actorRef = TestActorRef[StatefulActor]
+val actor = actorRef.underlyingActor
+
+actor.state should be ("Nog Niks")
+
+actorRef ! "Hallo"
+actor.state should be ("Hallo")
+
+actorRef ! "Quit"
+actor.state should be ("Done")
+----
+
+Let op: deze tests moeten dus synchroon uitgevoerd kunnen worden
+
 === Integration tests
+
