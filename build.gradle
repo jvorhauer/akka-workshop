@@ -65,7 +65,7 @@ asciidoctor {
     // Document attribute to root
     // of source directory with
     // files we might want to include.
-    attributes sourcesdir: "src/asciidoc"
+    attributes sourcesdir: "."
 
     // Sample document attribute.
     attributes javaVersion: '1.8.0_25'
@@ -74,7 +74,7 @@ asciidoctor {
     // Default is higlightjs.
     attributes 'source-highlighter': 'highlightjs',
             'highlightjs-theme': 'idea'
-    //attributes 'source-highlighter': 'coderay'
+//    attributes 'source-highlighter': 'coderay'
 }
 
 

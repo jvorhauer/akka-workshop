@@ -3,7 +3,7 @@ Ook voor Akka gebruiken we natuurlijk ons favoriete buildtool: Gradle.
 
 Maak een build.gradle met deze inhoud:
 
-[source,gradle]
+[source]
 ----
 apply plugin: 'scala'
 
@@ -26,7 +26,7 @@ We beginnen makkelijk met een bekende situatie. Je bestelt een biertje bij de ba
 
 Maak de Bartender:
 
-[source,scala]
+[source]
 ----
 class Bartender extends Actor {
   def receive = {
@@ -42,7 +42,7 @@ We werken nooit met rechtstreekse instanties van de Scala klasse. De enige commu
 
 Vervolgens vragen we de bartender om een biertje:
 
-[source,scala]
+[source]
 ----
 import akka.actor.{ActorSystem, Props}
 
@@ -73,7 +73,7 @@ Voeg de trait ActorLogging toe op de Bartender. +
 Dan kunnen we log.info("Ik log een biertje") gebruiken.
 
 We kunnen ook de binnenkomende messages loggen. Hiervoor moeten we de receive functie wrappen met LoggingReceive:
-[source,scala]
+[source]
 ----
 def receive = LoggingReceive {
   case "message" => doeIets
@@ -103,7 +103,7 @@ Dit is in link:https://github.com/typesafehub/config#using-hocon-the-json-supers
 Zie de link:http://doc.akka.io/docs/akka/current/general/configuration.html#Listing_of_the_Reference_Configuration[documentatie] voor meer configuratie opties.
 
 Je kan ook prima eigen configuratie instellingen hier in zetten. Die lees je dan vervolgens in je actor uit met:
-[source,scala]
+[source]
 ----
 context.system.settings.config.getString("instelling")
 ----

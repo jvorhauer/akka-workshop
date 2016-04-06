@@ -3,13 +3,13 @@
 Ter referentie. En voor het betere knip/plak werk.
 
 build.gradle
-[source,gradle]
+[source]
 ----
 include::../../build.gradle[]
 ----
 
 SchoolCan.scala
-[source,scala]
+[source]
 ----
 include::../main/scala/example/SchoolCan.scala[]
 ----
@@ -24,12 +24,14 @@ link:http://doc.akka.io/docs/akka/2.4.3/scala/http/routing-dsl/directives/index.
 Nu gaan we maken dat je ook online biertjes kan bestellen. +
 We willen een bestelling plaatsen met
 
+[source]
 ----
 curl -H "Content-Type: application/json" -X POST -d '{"aantal":1, "naam":"Tammo", "locatie":"Nieuwegein"}' http://localhost:8080/bier -v
 ----
 
 En vervolgens de lijst met bestellingen bekijken met
 
+[source]
 ----
 curl -H "Content-Type: application/json" -X GET http://localhost:8080/bier -v
 ----

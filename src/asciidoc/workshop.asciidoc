@@ -2,5 +2,7 @@
 
 include::intro.asciidoc[]
 include::bar.asciidoc[]
+include::test.asciidoc[]
+include::router.asciidoc[]
 include::akkaHttp.asciidoc[]
 
